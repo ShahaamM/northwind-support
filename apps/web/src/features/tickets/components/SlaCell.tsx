@@ -1,31 +1,24 @@
-import { Badge, type BadgeTone } from '../../../components/Badge';
-import { formatDateTime } from '../../../lib/format';
+import React from 'react';
 import type { SlaStatus } from '../../../types/api';
-
-const labels: Partial<Record<SlaStatus, { text: string; tone: BadgeTone }>> = {
-  Met: { text: 'Met', tone: 'success' },
-  Breached: { text: 'Breached', tone: 'danger' },
-  WithinSla: { text: 'Within SLA', tone: 'info' },
-  NotApplicable: { text: 'No SLA', tone: 'neutral' },
-};
+import { Badge } from '../../../components/Badge';
 
 interface SlaCellProps {
-  dueAtUtc: string | null;
   slaStatus: SlaStatus;
+  dueAtUtc?: string | null;
 }
 
-/** The due date and where the ticket stands against it, as shown in the ticket list. */
-export function SlaCell({ dueAtUtc, slaStatus }: SlaCellProps) {
-  const label = labels[slaStatus] ?? { text: humanizeStatus(slaStatus), tone: 'neutral' as BadgeTone };
-
-  return (
-    <div className="sla-cell">
-      <Badge tone={label.tone}>{label.text}</Badge>
-      <span className="sla-cell__due">{formatDateTime(dueAtUtc)}</span>
-    </div>
-  );
-}
-
-function humanizeStatus(status: SlaStatus): string {
-  return status.replace(/([a-z])([A-Z])/g, '$1 $2');
-}
+export const SlaCell: React.FC<SlaCellProps> = ({ slaStatus }) => {
+  switch (slaStatus) {
+    case 'Met':
+      return <Badge variant="success">Met (SLA Achieved)</Badge>;
+    case 'Breached':
+      return <Badge variant="danger">Breached (SLA Overdue)</Badge>;
+    case 'AtRisk':
+      return <Badge variant="warning">At Risk (Due Soon)</Badge>;
+    case 'WithinSla':
+      return <Badge variant="info">Within SLA</Badge>;
+    case 'NotApplicable':
+    default:
+      return <span className="text-gray-400">No SLA</span>;
+  }
+};

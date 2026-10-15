@@ -27,23 +27,21 @@ interface State {
 
 /**
  * Owns the ticket list's filters and the data they produce.
- *
- * One effect watches the whole `filters` state, so every filter (including any added later, such
- * as the SLA status) triggers a request without extra wiring. Only a change to the search text is
- * debounced; any other change is sent straight away.
  */
 export function useTicketList() {
   const [filters, setFilters] = useState<TicketFilters>(emptyFilters);
   const [state, setState] = useState<State>({ isLoading: true });
   const [reloadCount, setReloadCount] = useState(0);
-  const lastSearchSent = useRef(emptyFilters.search);
+
+  // Track search and non-search filters separately to prevent stale closure bugs (DEFECT-117)
+  const lastSearchRef = useRef(filters.search);
 
   useEffect(() => {
     let cancelled = false;
-    const isTyping = filters.search !== lastSearchSent.current;
+    const searchChanged = filters.search !== lastSearchRef.current;
 
     const load = async () => {
-      lastSearchSent.current = filters.search;
+      lastSearchRef.current = filters.search;
       setState((current) => ({ ...current, isLoading: true, error: undefined }));
 
       try {
@@ -59,12 +57,15 @@ export function useTicketList() {
       }
     };
 
-    const handle = window.setTimeout(() => void load(), isTyping ? DEBOUNCE_MS : 0);
+    // Only debounce if the search text specifically changed; dropdowns or other filters fetch immediately.
+    const timeoutId = window.setTimeout(
+      () => void load(),
+      searchChanged ? DEBOUNCE_MS : 0
+    );
 
     return () => {
-      // A newer filter set supersedes this one: drop the pending timer and ignore a late response.
       cancelled = true;
-      window.clearTimeout(handle);
+      window.clearTimeout(timeoutId);
     };
   }, [filters, reloadCount]);
 

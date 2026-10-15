@@ -17,13 +17,12 @@ namespace SupportDesk.Infrastructure.Queries;
 public sealed class TicketQueries(SupportDbContext db, IClock clock) : ITicketQueries
 {
     /// <remarks>
-    /// Sorts and pages every ticket. The filter values bound into <paramref name="query"/>
-    /// (search, status, priority, category, customer, agent, unassigned-only) are not applied
-    /// yet: server-side filtering is still to be built.
+    /// Filters, then counts, then sorts and pages: the count and the page both describe the
+    /// filtered set, and all of it runs in the database.
     /// </remarks>
     public async Task<PagedResult<TicketListItemDto>> GetPagedAsync(TicketQuery query, CancellationToken ct)
     {
-        var tickets = TicketsWithLabels();
+        var tickets = ApplyFilters(TicketsWithLabels(), query);
 
         var totalCount = await tickets.CountAsync(ct);
 
@@ -117,6 +116,28 @@ public sealed class TicketQueries(SupportDbContext db, IClock clock) : ITicketQu
         from agent in db.Set<Agent>().Where(a => a.Id == ticket.AssignedAgentId).DefaultIfEmpty()
         select new TicketWithLabels { Ticket = ticket, Customer = customer, Category = category, Agent = agent };
 
+    /// <summary>
+    /// Every supplied filter narrows the result (AND). A filter that was not supplied adds no
+    /// predicate at all. To add a filter, add one <c>WhereIf</c> line here.
+    /// </summary>
+    private static IQueryable<TicketWithLabels> ApplyFilters(IQueryable<TicketWithLabels> source, TicketQuery query)
+    {
+        var search = query.Search?.Trim();
+
+        return source
+            .WhereIf(query.Status is not null, x => x.Ticket.Status == query.Status)
+            .WhereIf(query.Priority is not null, x => x.Ticket.Priority == query.Priority)
+            .WhereIf(query.CategoryId is not null, x => x.Ticket.CategoryId == query.CategoryId)
+            .WhereIf(query.CustomerId is not null, x => x.Ticket.CustomerId == query.CustomerId)
+            .WhereIf(query.AssignedAgentId is not null, x => x.Ticket.AssignedAgentId == query.AssignedAgentId)
+            .WhereIf(query.UnassignedOnly, x => x.Ticket.AssignedAgentId == null)
+            .WhereIf(
+                !string.IsNullOrEmpty(search),
+                x => x.Ticket.Title.Contains(search!)
+                    || x.Ticket.Reference.Contains(search!)
+                    || x.Customer.Name.Contains(search!));
+    }
+
     private static IQueryable<TicketWithLabels> ApplySort(IQueryable<TicketWithLabels> source, TicketQuery query)
     {
         var descending = !string.Equals(query.SortDirection, "asc", StringComparison.OrdinalIgnoreCase);
@@ -143,15 +164,12 @@ public sealed class TicketQueries(SupportDbContext db, IClock clock) : ITicketQu
         // Keeps paging stable when the sort column has duplicates.
         return sorted.ThenByDescending(x => x.Ticket.Id);
     }
+}
 
-    private sealed class TicketWithLabels
-    {
-        public required Ticket Ticket { get; init; }
-
-        public required Customer Customer { get; init; }
-
-        public required Category Category { get; init; }
-
-        public Agent? Agent { get; init; }
-    }
+internal sealed class TicketWithLabels
+{
+    public required Ticket Ticket { get; init; }
+    public required Customer Customer { get; init; }
+    public required Category Category { get; init; }
+    public Agent? Agent { get; init; }
 }
