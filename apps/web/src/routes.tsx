@@ -1,5 +1,6 @@
 import { createBrowserRouter, Navigate } from 'react-router-dom';
 import { App } from './App';
+import { LoginPage } from './pages/LoginPage'; // Adjust the import path if your LoginPage is located elsewhere (e.g., ./features/auth/LoginPage)
 import { NotFoundPage } from './features/NotFoundPage';
 import { CustomerDetailPage } from './features/customers/CustomerDetailPage';
 import { CustomerListPage } from './features/customers/CustomerListPage';
@@ -8,6 +9,10 @@ import { TicketDetailPage } from './features/tickets/TicketDetailPage';
 import { TicketListPage } from './features/tickets/TicketListPage';
 
 export const router = createBrowserRouter([
+  {
+    path: '/login',
+    element: <LoginPage />,
+  },
   {
     path: '/',
     element: <App />,

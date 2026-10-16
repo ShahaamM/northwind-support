@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 using System.Text.Json.Serialization;
 using SupportDesk.Application;
 using SupportDesk.Infrastructure;
@@ -27,6 +30,25 @@ builder.Services.AddCors(options => options.AddPolicy(
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
+// JWT Authentication & Authorization Setup
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        var jwtSettings = builder.Configuration.GetSection("Jwt");
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings["Issuer"],
+            ValidAudience = jwtSettings["Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings["Key"]!))
+        };
+    });
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddApplication();
 builder.Services.AddInfrastructure(builder.Configuration);
 
@@ -44,6 +66,10 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseCors(FrontendCorsPolicy);
+
+// Authentication & Authorization Middleware
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.MapControllers();
 

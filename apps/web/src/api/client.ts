@@ -9,7 +9,6 @@ const baseUrl = import.meta.env.VITE_API_BASE_URL ?? '/api';
 /** A failed HTTP call, carrying the problem document the API returned. */
 export class ApiError extends Error {
   readonly status: number;
-
   readonly problem?: ProblemDetails;
 
   constructor(status: number, message: string, problem?: ProblemDetails) {
@@ -30,13 +29,34 @@ export class ApiError extends Error {
  * {@link ApiError} that callers can show to the user.
  */
 export async function request<T>(path: string, init?: RequestInit): Promise<T> {
+  // Automatically retrieve the stored JWT token from localStorage
+  const token = localStorage.getItem('authToken');
+
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(init?.headers as Record<string, string> ?? {}),
+  };
+
+  // Attach Authorization header if token exists
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+
   const response = await fetch(`${baseUrl}${path}`, {
     ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers ?? {}),
-    },
+    headers,
   });
+
+  // Handle unauthorized/expired session globally
+  if (response.status === 401) {
+    localStorage.removeItem('authToken');
+    localStorage.removeItem('agent');
+
+    // Redirect to login if not already there
+    if (window.location.pathname !== '/login') {
+      window.location.href = '/login';
+    }
+  }
 
   if (!response.ok) {
     const problem = await readProblem(response);

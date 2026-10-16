@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
 using SupportDesk.Application.Contracts.Common;
 using SupportDesk.Application.Contracts.Tickets;
 using SupportDesk.Application.Features.Tickets.Commands.AssignTicket;
@@ -6,9 +7,9 @@ using SupportDesk.Application.Features.Tickets.Commands.ChangeTicketStatus;
 using SupportDesk.Application.Features.Tickets.Commands.RaiseTicket;
 using SupportDesk.Application.Features.Tickets.Queries.GetTicket;
 using SupportDesk.Application.Features.Tickets.Queries.SearchTickets;
-
 namespace SupportDesk.Presentation.Controllers;
 
+[Authorize] // Requires a valid JWT bearer token for all endpoints in this controller (or specific actions)
 [ApiController]
 [Route("api/tickets")]
 [Produces("application/json")]
