@@ -33,8 +33,8 @@ One command brings up SQL Server, applies migrations, seeds data, and launches t
    ```bash
    docker compose down -v
    docker compose up --build
-## Quick start
-
+   ```
+3. Open two terminals, check the requirements and follow the steps below
 **Prerequisites:** .NET SDK 10 (`global.json`), Node.js 22 (`.nvmrc`; 20.19+ works), Docker.
 
 ```bash
