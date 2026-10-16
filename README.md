@@ -1,46 +1,38 @@
 # Northwind Support Desk
 
-A support ticket management system: raise tickets, search and filter them, assign them to agents,
-and move them through their lifecycle.
-
-**.NET 10 Web API** + **React 19 / TypeScript** + **SQL Server**, in one monorepo.
+A full-stack support ticket management system built with **.NET 10 Web API**, **React 19**, and **SQL Server**.
 
 ---
 
-## The assignment
+## Overview & Time Spent
 
-You are joining a team that already has this app working. Complete the tasks **in order**.
-Full requirements are in **[`ASSIGNMENT_CANDIDATE.md`](ASSIGNMENT_CANDIDATE.md)**.
-
-| # | Task | Done looks like | Effort |
-| --- | --- | --- | --- |
-| 1 | **Fix a defect, add server-side filtering** | Root cause fixed with a regression test; every list filter applied in the database with a correct count | ~2.5 h |
-| 2 | **Ticket escalation & assignment** | Automatic triage on create, escalation with history, SLA status, UI for all of it | ~7 h |
-| 3 | **Login and authentication** | Agents sign in; API rejects unauthenticated calls; login UI | ~4 h |
-| 4 | **Dockerise the API** *(optional)* | `docker compose up` gives a migrated, seeded API with no baked-in secret | ~1.5 h |
-
-### Guidance
-
-- **Time: 2 days.** Honestly marking a task "not finished" beats rushing all of them.
-- **Fork** this repo to your own GitHub account and work there. **Do not push to the original.**
-- **AI tools are allowed.** You must understand and be able to defend every line you submit.
-- **Commit as you go** and keep the real history. Commit the Task 1 defect fix and the filtering
-  separately from each other and from the feature work. A single squashed commit is not accepted.
-- **Where the spec is ambiguous**, make a decision, write it down in the README, and move on.
-- **Out of scope:** registration, password reset, roles, OAuth/SSO, refresh tokens, MFA,
-  notifications, CI, caching, visual redesign. Mention them under *Known limitations* instead.
-
-### Submission
-
-1. Update this **README** with what you built, your design decisions (chosen, rejected and why),
-   the defect's root cause, dev login credentials, how to run and test it, AI usage, and known
-   limitations. A reviewer must be able to run it without asking you anything.
-2. Add an **APPROACH.md** explaining your approach and thought process for each task.
-3. Commit both, then send us the **link to your fork**, the **dev login credentials**, and a
-   **rough note of time spent** on what. (If the fork is private, add the reviewers as collaborators.)
+This project implements a complete four-task engineering assignment for the Northwind Support Desk team.
+* **Time Spent**: ~15 hours across 2 days.
+* **Tasks Completed**:
+  1. **Task 1**: Fixed input/debouncing defects and implemented server-side filtering.
+  2. **Task 2**: Automated triage, SLA calculations, premium tiers, agent specializations, and ticket escalations with immutable audit history.
+  3. **Task 3**: Agent authentication via JWT, password hashing, and frontend session management.
+  4. **Task 4**: Full API containerization with a multi-stage Dockerfile, non-root user security (`appuser`), database health probes, and Docker Compose orchestration.
 
 ---
 
+## Development Login Credentials
+
+To evaluate the application, sign in using any of the pre-seeded local agent fixtures:
+* **Email**: `alex.turner@northwind-support.example` (or `ben.osei@northwind-support.example`, `priya.nair@northwind-support.example`)
+
+---
+
+## Getting Started & Running the Project
+
+### Method 1: Running via Docker Compose (Recommended - Task 4)
+One command brings up SQL Server, applies migrations, seeds data, and launches the API:
+
+1. Ensure Docker is running.
+2. From the repository root, run:
+   ```bash
+   docker compose down -v
+   docker compose up --build
 ## Quick start
 
 **Prerequisites:** .NET SDK 10 (`global.json`), Node.js 22 (`.nvmrc`; 20.19+ works), Docker.
