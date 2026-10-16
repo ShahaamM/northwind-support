@@ -7,7 +7,7 @@ A full-stack support ticket management system built with **.NET 10 Web API**, **
 ## Overview & Time Spent
 
 This project implements a complete four-task engineering assignment for the Northwind Support Desk team.
-* **Time Spent**: ~15 hours across 2 days.
+* **Time Spent**: ~7 hours across 2 days.
 * **Tasks Completed**:
   1. **Task 1**: Fixed input/debouncing defects and implemented server-side filtering.
   2. **Task 2**: Automated triage, SLA calculations, premium tiers, agent specializations, and ticket escalations with immutable audit history.
